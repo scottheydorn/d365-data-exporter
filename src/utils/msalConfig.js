@@ -1,18 +1,17 @@
 /**
  * MSAL Authentication Configuration
  * 
- * Uses well-known Azure PowerShell client ID (same as Python script)
+ * Accepts Client ID at runtime - no hardcoded app registration
  */
 
 import { PublicClientApplication, LogLevel } from '@azure/msal-browser';
 
-// Well-known Azure PowerShell public client ID
-const AZURE_POWERSHELL_CLIENT_ID = '1950a258-227b-4e31-a9cf-717495945fc2';
-
-export function getMsalConfig() {
+export function getMsalConfig(clientId) {
+  if (!clientId) return null;
+  
   return {
     auth: {
-      clientId: AZURE_POWERSHELL_CLIENT_ID,
+      clientId: clientId,
       authority: 'https://login.microsoftonline.com/organizations',
       redirectUri: window.location.origin + window.location.pathname,
       postLogoutRedirectUri: window.location.origin + window.location.pathname,
@@ -49,15 +48,6 @@ export function getLoginRequest(d365Url) {
   return {
     scopes: [`${normalizedUrl}/.default`],
   };
-}
-
-export function createMsalInstance() {
-  try {
-    return new PublicClientApplication(getMsalConfig());
-  } catch (error) {
-    console.error('Failed to create MSAL instance:', error);
-    return null;
-  }
 }
 
 export function validateD365Url(url) {
