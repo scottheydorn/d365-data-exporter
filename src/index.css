@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* New Balance inspired styling */
+:root {
+  --nb-red: #E21836;
+  --nb-red-dark: #ce2724;
+  --nb-yellow: #f3ec19;
+  --nb-teal: #207c88;
+  --nb-opal: #aac1bf;
+  --nb-cream: #e8e9d7;
+  --nb-gray: #4c4d4f;
+  --nb-black: #231f20;
+}
+
+body {
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--nb-black);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--nb-cream);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--nb-gray);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--nb-black);
+}
+
+/* Utility classes */
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-nb-red text-white font-semibold rounded-none uppercase tracking-wider
+           hover:bg-nb-red-dark transition-colors duration-200 
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-nb-black text-white font-semibold rounded-none uppercase tracking-wider
+           hover:bg-nb-gray transition-colors duration-200;
+  }
+
+  .btn-outline {
+    @apply px-6 py-3 bg-transparent border-2 border-nb-black text-nb-black font-semibold 
+           rounded-none uppercase tracking-wider hover:bg-nb-black hover:text-white 
+           transition-colors duration-200;
+  }
+
+  .btn-teal {
+    @apply px-6 py-3 bg-nb-teal text-white font-semibold rounded-none uppercase tracking-wider
+           hover:opacity-90 transition-opacity duration-200;
+  }
+
+  .card {
+    @apply bg-white shadow-lg p-6 border-l-4 border-nb-red;
+  }
+
+  .card-teal {
+    @apply bg-white shadow-lg p-6 border-l-4 border-nb-teal;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 border-2 border-nb-gray bg-white text-nb-black
+           focus:border-nb-red focus:outline-none transition-colors duration-200
+           placeholder-nb-gray/60;
+  }
+
+  .label {
+    @apply block text-sm font-semibold text-nb-black uppercase tracking-wider mb-2;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-nb-black uppercase tracking-wider;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-3 py-1 text-xs font-bold uppercase tracking-wider;
+  }
+
+  .badge-red {
+    @apply bg-nb-red text-white;
+  }
+
+  .badge-teal {
+    @apply bg-nb-teal text-white;
+  }
+
+  .badge-gray {
+    @apply bg-nb-gray text-white;
+  }
+
+  .badge-yellow {
+    @apply bg-nb-yellow text-nb-black;
+  }
+}
+
+/* Table styles */
+.data-table {
+  @apply w-full border-collapse;
+}
+
+.data-table th {
+  @apply px-4 py-3 text-left text-xs font-bold text-nb-black uppercase tracking-wider 
+         bg-nb-opal/30 border-b-2 border-nb-black;
+}
+
+.data-table td {
+  @apply px-4 py-3 text-sm text-nb-black border-b border-nb-opal;
+}
+
+.data-table tr:hover td {
+  @apply bg-nb-cream;
+}
+
+.data-table tr.selected td {
+  @apply bg-nb-teal/20;
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+  @apply w-5 h-5 accent-nb-red cursor-pointer;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+/* Loading spinner */
+.spinner {
+  @apply w-6 h-6 border-2 border-nb-gray border-t-nb-red rounded-full animate-spin;
+}
+
+/* Progress bar */
+.progress-bar {
+  @apply h-2 bg-nb-opal/30 overflow-hidden;
+}
+
+.progress-bar-fill {
+  @apply h-full bg-nb-red transition-all duration-300;
+}

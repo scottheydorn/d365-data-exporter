@@ -1,0 +1,41 @@
+{
+  "name": "d365-data-exporter",
+  "version": "1.0.0",
+  "description": "D365 F&O Data Entity Exporter - Export entity data to GitHub",
+  "private": true,
+  "homepage": "https://scottheydorn.github.io/d365-data-exporter",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "@azure/msal-browser": "^3.6.0",
+    "@azure/msal-react": "^2.0.8",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "papaparse": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.16",
+    "gh-pages": "^6.1.0",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5",
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "d365",
+    "dynamics365",
+    "data-export",
+    "odata"
+  ],
+  "author": "New Balance D365 Team",
+  "license": "MIT"
+}
