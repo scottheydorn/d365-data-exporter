@@ -1,9 +1,3 @@
-/**
- * D365 Connection Panel
- * 
- * Handles Azure AD authentication to D365 F&O
- */
-
 import React, { useState, useCallback } from 'react';
 import { PublicClientApplication } from '@azure/msal-browser';
 import { useApp } from '../context/AppContext';
@@ -23,20 +17,10 @@ export default function D365ConnectionPanel() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [showForm, setShowForm] = useState(!d365Connected);
 
-  const handleInputChange = useCallback((field, value) => {
-    setD365Config(prev => ({ ...prev, [field]: value }));
-  }, [setD365Config]);
-
   const handleConnect = useCallback(async () => {
-    // Validate inputs
     const d365Url = validateD365Url(d365Config.url);
     if (!d365Url) {
       setError('Please enter a valid D365 environment URL');
-      return;
-    }
-
-    if (!d365Config.clientId || !d365Config.tenantId) {
-      setError('Please enter Client ID and Tenant ID');
       return;
     }
 
@@ -44,27 +28,13 @@ export default function D365ConnectionPanel() {
     setError(null);
 
     try {
-      // Create MSAL config
-      const msalConfig = getMsalConfig({
-        clientId: d365Config.clientId,
-        tenantId: d365Config.tenantId,
-      });
-
-      if (!msalConfig) {
-        throw new Error('Invalid MSAL configuration');
-      }
-
-      // Initialize MSAL
+      const msalConfig = getMsalConfig();
       const msalInstance = new PublicClientApplication(msalConfig);
       await msalInstance.initialize();
 
-      // Get login request
       const loginRequest = getLoginRequest(d365Url);
-      if (!loginRequest) {
-        throw new Error('Invalid D365 URL for scope');
-      }
+      if (!loginRequest) throw new Error('Invalid D365 URL');
 
-      // Try to get token silently first
       const accounts = msalInstance.getAllAccounts();
       let tokenResponse;
 
@@ -75,39 +45,29 @@ export default function D365ConnectionPanel() {
             account: accounts[0],
           });
         } catch {
-          // Silent acquisition failed, need interactive login
           tokenResponse = await msalInstance.acquireTokenPopup(loginRequest);
         }
       } else {
-        // No accounts, do interactive login
         tokenResponse = await msalInstance.acquireTokenPopup(loginRequest);
       }
 
-      if (!tokenResponse?.accessToken) {
-        throw new Error('Failed to acquire access token');
-      }
+      if (!tokenResponse?.accessToken) throw new Error('Failed to acquire token');
 
-      // Store connection info
-      const userEmail = tokenResponse.account?.username || 'Connected';
       connectD365(
         { ...d365Config, url: d365Url },
         tokenResponse.accessToken,
-        userEmail
+        tokenResponse.account?.username || 'Connected'
       );
-
       setShowForm(false);
     } catch (error) {
-      console.error('D365 connection error:', error);
-      setError(error.message || 'Failed to connect to D365');
+      let msg = error.message || 'Failed to connect';
+      if (error.errorCode === 'popup_window_error') msg = 'Popup blocked. Please allow popups.';
+      if (error.errorCode === 'user_cancelled') msg = 'Authentication cancelled.';
+      setError(msg);
     } finally {
       setIsConnecting(false);
     }
   }, [d365Config, connectD365, setError]);
-
-  const handleDisconnect = useCallback(() => {
-    disconnectD365();
-    setShowForm(true);
-  }, [disconnectD365]);
 
   if (d365Connected && !showForm) {
     return (
@@ -121,10 +81,7 @@ export default function D365ConnectionPanel() {
               <p className="text-xs text-nb-gray mt-1">{d365Config.url}</p>
             </div>
           </div>
-          <button
-            onClick={handleDisconnect}
-            className="btn-outline text-sm py-2"
-          >
+          <button onClick={() => { disconnectD365(); setShowForm(true); }} className="btn-outline text-sm py-2">
             Disconnect
           </button>
         </div>
@@ -134,88 +91,32 @@ export default function D365ConnectionPanel() {
 
   return (
     <div className="card">
-      <h2 className="section-title mb-6">
-        <span className="mr-2">🔐</span>
-        Connect to D365
-      </h2>
-
+      <h2 className="section-title mb-6"><span className="mr-2">🔐</span>Connect to D365</h2>
       <div className="space-y-4">
-        {/* D365 Environment URL */}
         <div>
           <label className="label">D365 Environment URL</label>
           <input
             type="url"
             value={d365Config.url}
-            onChange={(e) => handleInputChange('url', e.target.value)}
+            onChange={(e) => setD365Config(prev => ({ ...prev, url: e.target.value }))}
             placeholder="https://your-env.sandbox.operations.dynamics.com"
             className="input-field"
             disabled={isConnecting}
           />
-          <p className="text-xs text-nb-gray mt-1">
-            Your D365 F&O environment URL
-          </p>
         </div>
-
-        {/* Client ID */}
-        <div>
-          <label className="label">Azure App Client ID</label>
-          <input
-            type="text"
-            value={d365Config.clientId}
-            onChange={(e) => handleInputChange('clientId', e.target.value)}
-            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            className="input-field"
-            disabled={isConnecting}
-          />
-          <p className="text-xs text-nb-gray mt-1">
-            From Azure Portal → App Registration
-          </p>
-        </div>
-
-        {/* Tenant ID */}
-        <div>
-          <label className="label">Azure Tenant ID</label>
-          <input
-            type="text"
-            value={d365Config.tenantId}
-            onChange={(e) => handleInputChange('tenantId', e.target.value)}
-            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            className="input-field"
-            disabled={isConnecting}
-          />
-          <p className="text-xs text-nb-gray mt-1">
-            Your Azure AD tenant ID
-          </p>
-        </div>
-
-        {/* Connect Button */}
-        <div className="pt-4">
-          <button
-            onClick={handleConnect}
-            disabled={isConnecting || !d365Config.url || !d365Config.clientId || !d365Config.tenantId}
-            className="btn-primary w-full flex items-center justify-center gap-2"
-          >
-            {isConnecting ? (
-              <>
-                <span className="spinner" />
-                Connecting...
-              </>
-            ) : (
-              'Connect to D365'
-            )}
-          </button>
-        </div>
-
-        {/* Help Text */}
-        <div className="bg-nb-cream p-4 mt-4">
-          <h4 className="font-semibold text-sm text-nb-black mb-2">
-            Azure App Requirements:
-          </h4>
-          <ul className="text-xs text-nb-gray space-y-1">
-            <li>• App must be registered in Azure AD</li>
-            <li>• Redirect URI: <code className="bg-white px-1">{window.location.origin + window.location.pathname}</code></li>
-            <li>• API Permission: Dynamics ERP (user_impersonation)</li>
-            <li>• Authentication: Enable "Single-page application"</li>
+        <button
+          onClick={handleConnect}
+          disabled={isConnecting || !d365Config.url}
+          className="btn-primary w-full"
+        >
+          {isConnecting ? 'Connecting...' : 'Connect to D365'}
+        </button>
+        <div className="bg-nb-cream p-4 mt-4 text-xs text-nb-gray">
+          <p className="font-semibold text-nb-black mb-2">How it works:</p>
+          <ul className="space-y-1">
+            <li>• Uses same authentication as the Python script</li>
+            <li>• Sign in with your Microsoft account</li>
+            <li>• No app registration required</li>
           </ul>
         </div>
       </div>
