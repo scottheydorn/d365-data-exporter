@@ -12,6 +12,7 @@ export function AppProvider({ children }) {
   // D365 Authentication
   const [d365Config, setD365Config] = useState({
     url: '',
+    clientId: '',
   });
   const [d365Token, setD365Token] = useState(null);
   const [d365User, setD365User] = useState(null);
