@@ -24,11 +24,18 @@ export default function D365ConnectionPanel() {
       return;
     }
 
+    if (!d365Config.clientId || d365Config.clientId.trim().length < 10) {
+      setError('Please enter a valid Azure App Client ID');
+      return;
+    }
+
     setIsConnecting(true);
     setError(null);
 
     try {
-      const msalConfig = getMsalConfig();
+      const msalConfig = getMsalConfig(d365Config.clientId.trim());
+      if (!msalConfig) throw new Error('Invalid configuration');
+
       const msalInstance = new PublicClientApplication(msalConfig);
       await msalInstance.initialize();
 
@@ -63,6 +70,7 @@ export default function D365ConnectionPanel() {
       let msg = error.message || 'Failed to connect';
       if (error.errorCode === 'popup_window_error') msg = 'Popup blocked. Please allow popups.';
       if (error.errorCode === 'user_cancelled') msg = 'Authentication cancelled.';
+      if (msg.includes('AADSTS50011')) msg = 'Redirect URI not registered. Add this URL to your Azure app: ' + window.location.origin + window.location.pathname;
       setError(msg);
     } finally {
       setIsConnecting(false);
@@ -104,19 +112,34 @@ export default function D365ConnectionPanel() {
             disabled={isConnecting}
           />
         </div>
+        <div>
+          <label className="label">Azure App Client ID</label>
+          <input
+            type="text"
+            value={d365Config.clientId}
+            onChange={(e) => setD365Config(prev => ({ ...prev, clientId: e.target.value }))}
+            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            className="input-field"
+            disabled={isConnecting}
+          />
+          <p className="text-xs text-nb-gray mt-1">
+            From your Azure AD App Registration
+          </p>
+        </div>
         <button
           onClick={handleConnect}
-          disabled={isConnecting || !d365Config.url}
+          disabled={isConnecting || !d365Config.url || !d365Config.clientId}
           className="btn-primary w-full"
         >
           {isConnecting ? 'Connecting...' : 'Connect to D365'}
         </button>
         <div className="bg-nb-cream p-4 mt-4 text-xs text-nb-gray">
-          <p className="font-semibold text-nb-black mb-2">How it works:</p>
+          <p className="font-semibold text-nb-black mb-2">Azure App Setup:</p>
           <ul className="space-y-1">
-            <li>• Uses same authentication as the Python script</li>
-            <li>• Sign in with your Microsoft account</li>
-            <li>• No app registration required</li>
+            <li>• Register app in Azure AD → App registrations</li>
+            <li>• Platform: Single-page application (SPA)</li>
+            <li>• Redirect URI: <code className="bg-white px-1">{window.location.origin + window.location.pathname}</code></li>
+            <li>• API Permission: Dynamics ERP → user_impersonation</li>
           </ul>
         </div>
       </div>
