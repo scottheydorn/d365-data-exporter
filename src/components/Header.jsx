@@ -43,7 +43,7 @@ export default function Header() {
             <div className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${githubConnected ? 'bg-green-400' : 'bg-nb-gray'}`} />
               <span className="text-sm text-nb-opal">
-                {githubConnected ? 'GitHub' : 'GitHub'}
+                {githubConnected ? 'GitHub Connected' : 'GitHub'}
               </span>
             </div>
           </div>

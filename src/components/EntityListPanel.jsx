@@ -349,7 +349,6 @@ export default function EntityListPanel() {
                       <span className={`badge ${
                         entity.type === 'manual' ? 'badge-gray' :
                         entity.type === 'custom' ? 'badge-teal' :
-                        entity.type === 'microsoft' ? 'badge-gray' :
                         'badge-gray'
                       }`}>
                         {entity.type}
